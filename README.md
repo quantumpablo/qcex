@@ -1,0 +1,144 @@
+# ◈ QCEX — Quantum Commodity Exchange
+
+> Production-grade quantitative finance toolkit for commodity derivatives pricing, volatility modelling, backtesting, and risk analytics.
+
+**Live app:** [qcex-quantumpablo.streamlit.app](https://qcex-quantumpablo.streamlit.app)  
+**Author:** Pablo M. Paniagua — QuantumPablo
+
+---
+
+## What is QCEX?
+
+QCEX is a quantitative pricing engine built from first principles for physical commodity derivatives. It implements the models used by professional quant desks at investment banks and commodity trading houses, applied to three carefully selected markets:
+
+| Commodity | Reference | Unit | Why interesting |
+|---|---|---|---|
+| **Cocoa** | ICE CC1 | USD/MT | Supply concentration, ENSO correlation, 2023-24 crisis (+150% vol) |
+| **Natural Gas TTF** | ICE TTF / NG | EUR/MWh | HDD seasonality, geopolitical risk, post-2022 structural regime |
+| **Uranium U3O8** | OTC / URA ETF | USD/lb | OTC market, nuclear policy driven, rare in quant portfolios |
+
+---
+
+## Models Implemented
+
+### Futures Pricing
+
+**Schwartz-Smith Two-Factor Model (2000)**  
+Decomposes log spot price into two latent factors:
+
+```
+ln(S_t) = χ_t + ξ_t
+```
+
+- `χ_t` — Short-term: Ornstein-Uhlenbeck (transient shocks, half-life = ln2/κ)
+- `ξ_t` — Long-term: GBM with drift (equilibrium price level)
+
+Futures pricing formula:
+```
+ln F(t,T) = exp(-κτ)·χ_t + ξ_t + A(τ)
+```
+
+Calibrated via **Kalman Filter MLE** on the observed futures term structure.
+
+Calibrated half-lives:
+- Cocoa: ~10.4 months (κ = 0.80)
+- Gas TTF: ~4.0 months (κ = 2.10) — fast mean-reversion
+- Uranium: ~27.6 months (κ = 0.30) — slow OTC dynamics
+
+### Options Pricing
+
+**Black-76** for European options on futures  
+**SABR Stochastic Volatility** (Hagan et al. 2002) for the full implied vol surface:
+
+```
+dF = σ · F^β · dW₁
+dσ = α · σ · dW₂,  dW₁·dW₂ = ρ dt
+```
+
+Parameters calibrated per maturity slice via weighted least squares. Full Greeks computed: Δ, Γ, ν, Θ, Vanna, Volga.
+
+### Backtesting Engine (5 Strategies)
+
+| Strategy | Logic | Best for |
+|---|---|---|
+| Trend Following | EMA 20/60 crossover | Structural supply shocks |
+| Mean Reversion | Bollinger Bands 1.5σ | Gas, power (fast mean-reversion) |
+| Momentum | 1-month price return sign | Persistent trends |
+| Weather-Driven | ENSO proxy / HDD seasonal | Cocoa dry season, gas winter |
+| Vol Breakout | ATR breakout above range | Consolidation breakouts |
+| **Combined** | Equal-weight ensemble | Diversified, lower drawdown |
+
+**Key result:** Mean Reversion achieves Sharpe 0.56, +47% total return on Gas TTF over 2 years, while buy-and-hold is negative — consistent with gas's fast mean-reverting microstructure.
+
+### Risk Analytics
+
+- Historical VaR and CVaR at configurable confidence levels (95%, 99%, 99.5%)
+- Parametric (Gaussian) VaR for comparison
+- Rolling VaR (252-day window)
+- Commodity-specific stress scenarios calibrated to historical crises
+- Volatility cone (percentile distribution across horizons)
+- Drawdown analysis
+
+### Weather Indicators
+
+Real-time data from **Open-Meteo** (free API, no key required):
+
+- **Cocoa** → Abidjan (5.35°N, 4.00°W): precipitation anomaly, dry days, ENSO proxy
+- **Gas TTF** → Berlin (52.52°N, 13.40°E): HDD 30-day, HDD anomaly, days below 0°C
+- **Uranium** → Energy policy indicators (no direct weather driver)
+
+Automatic fallback to synthetic seasonal data if API unavailable.
+
+---
+
+## Project Structure
+
+```
+qcex/
+├── Home.py                      # Streamlit entry point
+├── theme.py                     # Design system (colors, CSS, Plotly layout)
+├── pages/
+│   ├── 1_Market_Overview.py     # Prices, vol, correlation, weather indicators
+│   ├── 2_Futures_Pricer.py      # Schwartz-Smith term structure + Monte Carlo
+│   ├── 3_Options_SABR.py        # SABR vol surface, Greeks, calibration
+│   ├── 4_Risk_Dashboard.py      # VaR/CVaR, stress testing, vol cone
+│   └── 5_Backtesting.py         # Multi-strategy backtesting engine
+├── models/
+│   ├── schwartz_smith.py        # 2-factor model + Kalman Filter MLE
+│   └── sabr.py                  # SABR model + Black-76 + Greeks
+├── analytics/
+│   ├── risk.py                  # VaR, CVaR, stress scenarios, vol cone
+│   └── backtest.py              # Backtesting engine + performance metrics
+├── data/
+│   ├── fetcher.py               # yfinance data layer + synthetic fallback
+│   └── weather.py               # Open-Meteo API + seasonal fallback
+├── requirements.txt
+└── runtime.txt                  # Python 3.9 (Streamlit Cloud)
+```
+
+---
+
+## Installation
+
+```bash
+git clone https://github.com/quantumpablo/qcex.git
+cd qcex
+pip install -r requirements.txt
+streamlit run Home.py
+```
+
+The app uses **yfinance** as primary data source. If unavailable, it automatically falls back to synthetic data generated by the same stochastic models — the app always runs.
+
+---
+
+## References
+
+- Black, F. (1976). *The Pricing of Commodity Contracts.* Journal of Financial Economics.
+- Schwartz, E. (1997). *The Stochastic Behavior of Commodity Prices.* Journal of Finance.
+- Schwartz, E. & Smith, J.E. (2000). *Short-Term Variations and Long-Term Dynamics in Commodity Prices.* Management Science.
+- Hagan, P., Kumar, D., Lesniewski, A. & Woodward, D. (2002). *Managing Smile Risk.* Wilmott Magazine.
+- Working, H. (1949). *The Theory of Price of Storage.* American Economic Review.
+
+---
+
+*QCEX — Quantum Commodity Exchange · by QuantumPablo · Pablo M. Paniagua*
