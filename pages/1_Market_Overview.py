@@ -47,13 +47,18 @@ BG,BG2,GRID,TEXT,TEXT2,BORDER,ACC = (
 
 st.markdown(f"""<style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-  html,body,[class*="css"]{{font-family:'IBM Plex Mono',monospace!important;background:{BG};color:{TEXT}}}
-  .stApp{{background:{BG}}}
-  section[data-testid="stSidebar"]{{background:{BG2};border-right:1px solid {BORDER}}}
+  html,body,[class*="css"]{{font-family:'IBM Plex Mono',monospace!important;background:{BG}!important;color:{TEXT}!important}}
+  .stApp{{background:{BG}!important}}
+  section[data-testid="stSidebar"]{{background:{BG2}!important;border-right:1px solid {BORDER}}}
+  section[data-testid="stSidebar"] *{{color:{TEXT2}!important}}
   h1,h2,h3{{color:{ACC}!important;font-family:'IBM Plex Mono',monospace!important}}
   [data-testid="metric-container"]{{background:{BG2};border:1px solid {BORDER};border-radius:4px;padding:8px 12px}}
   [data-testid="metric-container"] label{{color:{TEXT2}!important;font-size:10px;letter-spacing:1px}}
   [data-testid="metric-container"] [data-testid="stMetricValue"]{{color:{ACC}!important}}
+  [data-testid="stDataFrame"]{{background:{BG2}!important}}
+  .stTabs [data-baseweb="tab"]{{color:{TEXT2}!important}}
+  .stTabs [aria-selected="true"]{{color:{ACC}!important;border-bottom-color:{ACC}!important}}
+  hr{{border-color:{BORD if 'BORD' in content else 'BORDER'}}}
 </style>""", unsafe_allow_html=True)
 
 PL = dict(paper_bgcolor=BG, plot_bgcolor=BG,
