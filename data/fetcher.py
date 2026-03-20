@@ -15,6 +15,7 @@ Tickers used:
 import numpy as np
 import pandas as pd
 from datetime import datetime, timedelta
+from typing import Dict, Optional, Tuple
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -90,7 +91,7 @@ def fetch_prices(commodity: str, period_days: int = 504) -> pd.DataFrame:
         return df
 
 
-def get_spot(commodity: str) -> tuple[float, str]:
+def get_spot(commodity: str) -> Tuple[float, str]:
     """Return (spot_price, source) using most recent close."""
     df = fetch_prices(commodity, period_days=5)
     return float(df["Close"].iloc[-1]), df.attrs.get("source", "synthetic")
@@ -107,7 +108,7 @@ def rolling_vol(df: pd.DataFrame, window: int = 21) -> pd.Series:
     return returns.rolling(window).std() * np.sqrt(252)
 
 
-def compute_stats(commodity: str, df: pd.DataFrame | None = None) -> dict:
+def compute_stats(commodity: str, df: Optional[pd.DataFrame] = None) -> dict:
     """Return dict of key statistics for the commodity."""
     if df is None:
         df = fetch_prices(commodity)
@@ -138,7 +139,7 @@ def compute_stats(commodity: str, df: pd.DataFrame | None = None) -> dict:
 def build_term_structure(spot: float, r: float, u: float,
                          kappa: float, alpha_lr: float, sigma: float,
                          lambda_param: float,
-                         maturities: list | None = None) -> pd.DataFrame:
+                         maturities: Optional[list] = None) -> pd.DataFrame:
     """
     Build futures term structure using Schwartz 1-factor formula.
     Used when no exchange-listed futures chain is available.

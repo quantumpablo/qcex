@@ -5,6 +5,7 @@ Risk analytics: Historical VaR, CVaR, stress scenarios,
 correlation matrix, rolling metrics.
 """
 
+from typing import Dict, Optional, Tuple
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -123,7 +124,7 @@ def stress_table(commodity: str, spot: float) -> pd.DataFrame:
 
 # ── Correlation & portfolio ───────────────────────────────────────────────────
 
-def correlation_matrix(returns_dict: dict[str, pd.Series]) -> pd.DataFrame:
+def correlation_matrix(returns_dict: Dict[str, pd.Series]) -> pd.DataFrame:
     """Compute correlation matrix from dict of return series."""
     df = pd.DataFrame(returns_dict).dropna()
     return df.corr()
@@ -139,7 +140,7 @@ def rolling_correlation(s1: pd.Series, s2: pd.Series,
 # ── Realised vol decomposition ────────────────────────────────────────────────
 
 def vol_cone(returns: pd.Series,
-             windows: list | None = None) -> pd.DataFrame:
+             windows: Optional[list] = None) -> pd.DataFrame:
     """
     Volatility cone: shows percentile distribution of realised vol
     across different horizons.

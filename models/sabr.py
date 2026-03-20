@@ -25,6 +25,7 @@ Author: Commodity Pricing Engine — Portfolio Project
 import numpy as np
 from scipy.optimize import minimize, differential_evolution
 from scipy.stats import norm
+from typing import Dict, Optional, Tuple
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -217,7 +218,7 @@ def sabr_greeks(F: float, K: float, r: float, T: float,
 
 def _sse_sabr(x: np.ndarray, strikes: np.ndarray, market_vols: np.ndarray,
               F: float, T: float, beta: float,
-              weights: np.ndarray | None = None) -> float:
+              weights: Optional[np.ndarray] = None) -> float:
     """SSE objective for SABR calibration."""
     alpha, rho, nu = x
     if alpha <= 0 or nu <= 0 or abs(rho) >= 1:
@@ -236,7 +237,7 @@ def _sse_sabr(x: np.ndarray, strikes: np.ndarray, market_vols: np.ndarray,
 
 def calibrate_sabr(strikes: np.ndarray, market_vols: np.ndarray,
                    F: float, T: float, beta: float = 0.5,
-                   weights: np.ndarray | None = None,
+                   weights: Optional[np.ndarray] = None,
                    method: str = "L-BFGS-B",
                    n_restarts: int = 8) -> dict:
     """
@@ -349,7 +350,7 @@ class SABRModel:
         return sabr_greeks(F, K, r, T, self.alpha, self.beta, self.rho, self.nu)
 
     def smile(self, F: float, T: float,
-              moneyness: list | None = None) -> dict:
+              moneyness: Optional[list] = None) -> dict:
         """
         Compute vol smile for given forward and maturity.
 
@@ -371,8 +372,8 @@ class SABRModel:
         }
 
     def vol_surface(self, F: float,
-                    maturities: list | None = None,
-                    moneyness: list | None = None) -> dict:
+                    maturities: Optional[list] = None,
+                    moneyness: Optional[list] = None) -> dict:
         """
         Compute the full implied vol surface.
 
@@ -417,7 +418,7 @@ class SABRModel:
     @classmethod
     def calibrate(cls, strikes: np.ndarray, market_vols: np.ndarray,
                   F: float, T: float, beta: float = 0.5,
-                  weights: np.ndarray | None = None,
+                  weights: Optional[np.ndarray] = None,
                   method: str = "L-BFGS-B") -> "SABRModel":
         """
         Fit SABR to market smile. Returns calibrated SABRModel instance.
