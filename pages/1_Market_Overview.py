@@ -6,7 +6,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from theme import LEGEND, CSS, BG, BG2, BG3, ACC, TEXT, TEXT2, BORD, GRID, PLOTLY, ax, footer, COMM_COLORS
+from theme import LEGEND, CSS, BG, BG2, BG3, ACC, GOLD, TEXT, TEXT2, BORD, GRID, PLOTLY, ax, footer, COMM_COLORS
 from data.fetcher import fetch_prices, compute_returns, rolling_vol, compute_stats, TICKERS
 from analytics.risk import vol_cone, drawdown_series, correlation_matrix
 
